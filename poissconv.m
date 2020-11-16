@@ -64,7 +64,9 @@ Maxdur = [];
 Trise = 1;
 Tdecay = 20;
 Fs = 1000;
-decay_factor = 5;
+% decay_factor = 5;
+decay_factor = 7;
+Units = 'ms';
 
 userTrise = 0;
 userTdecay = 0;
@@ -238,7 +240,12 @@ end
 % convolution output (length = length(S))
 %------------------------------------------------------------------------
 %------------------------------------------------------------------------
-sdf = conv(S, K);
+% pad S with zeros to eliminate odd things at start and end
+padlen = length(K);
+Spad = [zeros(1, padlen) force_row(S) zeros(1, padlen)];
+sdftmp = conv(Spad, K);
+% keep original bits
+sdf = sdftmp( (padlen:(padlen+length(S)))+1 );
 %sdf = tmp((L2+1):(length(tmp) - L2) );
 if ~isempty(maxsamples)
 	sdf = sdf(1:maxsamples);
