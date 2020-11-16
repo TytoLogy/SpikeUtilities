@@ -15,9 +15,15 @@ function [sdf, K, S] = gaussconv(spikebins, glength, gwidth, varargin)
 %	gwidth		width (std. deviation) of gaussian kernel in samples
 % 
 %	Optional:
-% 		max_bin		Fixed length of bins for output vector (default is 
-% 						time of last spike + 2*gwidth)
-%						This is useful if SDFs will be averaged or summed
+%  	'MAX_BIN', <max_bin>  Fixed length of bins for output vector 
+% 		                        default is time of last spike + 2*gwidth
+% 										This is useful if SDFs will be averaged 
+% 										or summed
+% 		'SCALE_KERNEL'			 If specified, gaussian kernel will be scaled
+% 		                      by area under curve (i.e., sum(K)). This can
+% 									 help express output as spikes/s. To do this
+% 									 multiply scaled kernel SDF by sampling rate
+% 									 
 %
 % Output Arguments:
 % 	sdf		spike density function
@@ -36,6 +42,7 @@ function [sdf, K, S] = gaussconv(spikebins, glength, gwidth, varargin)
 % Revisions:
 %	12 October, 2010 (SJS):	cleaned up some things, updated comments
 %	29 Aug 2016 (SJS): added max_bin optional arg, updated email
+%  16 Nov 2020 (SJS): added SCALE_KERNEL option, modified spec of MAX_BIN
 %------------------------------------------------------------------------
 
 %------------------------------------------------------------------------
@@ -43,6 +50,26 @@ function [sdf, K, S] = gaussconv(spikebins, glength, gwidth, varargin)
 %------------------------------------------------------------------------
 if isempty(spikebins)
 	error('%s: spikebins is empty!', mfilename);
+end
+
+% defaults
+max_bin = [];
+scale_kernel = false;
+
+if ~isempty(varargin)
+	argI = 1;
+	while argI <= length(varargin)
+		switch upper(varargin{argI})
+			case 'MAX_BIN'
+				max_bin = varargin{argI + 1};
+				argI = argI + 2;
+			case 'SCALE_KERNEL'
+				scale_kernel = true;
+				argI = argI + 1;
+			otherwise
+				error([mfilename ': unknown option ' varargin{argI}]);
+		end
+	end
 end
 
 %------------------------------------------------------------------------
@@ -58,14 +85,20 @@ L2 = ceil(glength/2);
 x = -L2:L2;
 % gaussian function
 K = exp( -(x./gwidth).^2 );
+if scale_kernel
+	K = K ./ sum(K);
+end
 
 %------------------------------------------------------------------------
 % convert spike samples to spike events
 %------------------------------------------------------------------------
 % determine length of output vector from input or from spikebins
-if ~isempty(varargin)
-	max_bin = varargin{1};
-else
+% if ~isempty(varargin)
+% 	max_bin = varargin{1};
+% else
+% 	max_bin = max(spikebins) + 2*gwidth;
+% end
+if isempty(max_bin)
 	max_bin = max(spikebins) + 2*gwidth;
 end
 
