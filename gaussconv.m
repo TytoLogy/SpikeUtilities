@@ -48,9 +48,9 @@ function [sdf, K, S] = gaussconv(spikebins, glength, gwidth, varargin)
 %------------------------------------------------------------------------
 % check input parameters
 %------------------------------------------------------------------------
-if isempty(spikebins)
-	error('%s: spikebins is empty!', mfilename);
-end
+% if isempty(spikebins)
+% 	error('%s: spikebins is empty!', mfilename);
+% end
 
 % defaults
 max_bin = [];
@@ -119,5 +119,6 @@ end
 % convolve spike train with Gaussian, return only valid part of 
 % convolution output (length = length(S))
 %------------------------------------------------------------------------
-tmp = conv(S, K);
-sdf = tmp((L2+1):(length(tmp) - L2) );
+% tmp = conv(S, K);
+% sdf = tmp((L2+1):(length(tmp) - L2) );
+sdf = conv(S, K, 'SAME');
