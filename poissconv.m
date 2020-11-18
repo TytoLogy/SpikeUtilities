@@ -267,15 +267,15 @@ end
 % end
 
 % find peak index
-[~, pkI] = max(K)
+[~, pkI] = max(K);
 % find pts to add to beginning to shift to center
-nshift = length(K) - pkI
+nshift = length(K) - pkI;
 if even(length(nshift) + length(K))
-	nshift = nshift - 1
+	nshift = nshift - 1;
 end
 % add to K
 K = [zeros(1, nshift) K];
-
+% perform convolution, return same length vector as S
 sdf = conv(S, K, 'SAME');
 if ~isempty(maxsamples)
 	sdf = sdf(1:maxsamples);
