@@ -147,7 +147,9 @@ if strcmpi(Units, 'ms')
 	% convert spikes to sample times
 	%----------------------------------------------------------------
 	% since spiketimes are in units of milliseconds, use ms2samples
-	spikebins = ms2samples(spiketimes, Fs);
+% 	spikebins = ms2samples(spiketimes, Fs);
+	% adding 1 to account for matlab indexing
+	spikebins = ms2samples(spiketimes, Fs) + 1;
 	% convert Maxdur to maxsamples
 	if isempty(Maxdur)
 		maxsamples = max(spikebins) + ms2samples(Klength, Fs);
@@ -208,7 +210,8 @@ elseif strcmpi(Units, 'seconds')
 	% convert spikes to sample times
 	%----------------------------------------------------------------
 	% convert spikes to ms, then use ms2samples
-	spikebins = ms2samples(1000.*spiketimes, Fs);
+% 	spikebins = ms2samples(1000.*spiketimes, Fs);
+	spikebins = ms2samples(1000.*spiketimes, Fs) + 1;
 	% convert Maxdur to maxsamples
 	if isempty(Maxdur)
 		maxsamples = max(spikebins) + ms2samples(1000*Klength, Fs);
@@ -269,7 +272,7 @@ end
 % find peak index
 [~, pkI] = max(K);
 % find pts to add to beginning to shift to center
-nshift = length(K) - pkI;
+nshift = length(K) - (pkI + 2);
 if even(length(nshift) + length(K))
 	nshift = nshift - 1;
 end
@@ -277,6 +280,9 @@ end
 K = [zeros(1, nshift) K];
 % perform convolution, return same length vector as S
 sdf = conv(S, K, 'SAME');
+% truncate sdf if length is greater than maxsamples
 if ~isempty(maxsamples)
-	sdf = sdf(1:maxsamples);
+	if length(sdf) > maxsamples
+		sdf = sdf(1:maxsamples);
+	end
 end
