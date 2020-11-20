@@ -25,8 +25,8 @@ function [sdf, K, S] = poissconv(spiketimes, varargin)
 % 						option.
 % 	
 % 	Optional:
-%		Trise			Poisson rise time constant (default: 
-%		Tdecay		Poisson decay time constant
+%		Trise			Poisson rise time constant (default: 1 millisecond)
+%		Tdecay		Poisson decay time constant (default: 20 milliseconds)
 %		Fs				Sample rate (default = 1000 samples/second)
 % 		Maxdur		max duration to use for sdf vectors.
 % 						note that if this is not provided, empty
