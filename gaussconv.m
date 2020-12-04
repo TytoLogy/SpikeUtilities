@@ -73,21 +73,23 @@ if ~isempty(varargin)
 end
 
 %------------------------------------------------------------------------
-% Set up gaussian kernel
+% get gaussian kernel
 %------------------------------------------------------------------------
-% center window around 0, which means length of kernel
-% (glength) should be an odd number
-if iseven(glength)
-	glength = glength+1;
-end
-L2 = ceil(glength/2);
-% "time" (in samples) for gaussian
-x = -L2:L2;
-% gaussian function
-K = exp( -(x./gwidth).^2 );
-if scale_kernel
-	K = K ./ sum(K);
-end
+[K, ~] = gausskernel(glength, gwidth, scale_kernel);
+% % center window around 0, which means length of kernel
+% % (glength) should be an odd number
+% if iseven(glength)
+% 	glength = glength+1;
+% end
+% L2 = ceil(glength/2);
+% % "time" (in samples) for gaussian
+% x = -L2:L2;
+% % gaussian function
+% K = exp( -(x./gwidth).^2 );
+% if scale_kernel
+% 	K = K ./ sum(K);
+% end
+
 
 %------------------------------------------------------------------------
 % convert spike samples to spike events
