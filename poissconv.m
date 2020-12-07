@@ -1,6 +1,6 @@
 function [sdf, K, S] = poissconv(spiketimes, varargin)
 %------------------------------------------------------------------------
-% [sdf, K, S] = poissconv(spiketimes, prise, pdecay, maxdur)
+% [sdf, K, S] = poissconv(spiketimes, <options>)
 %------------------------------------------------------------------------
 % SpikeUtilities Toolbox
 %------------------------------------------------------------------------
@@ -25,10 +25,16 @@ function [sdf, K, S] = poissconv(spiketimes, varargin)
 % 						option.
 % 	
 % 	Optional:
-%		Trise			Poisson rise time constant (default: 
-%		Tdecay		Poisson decay time constant
-%		Fs				Sample rate (default = 1000 samples/second)
-% 		Maxdur		max duration to use for sdf vectors.
+%		'Trise', <value>						Poisson rise time constant
+% 														default: 1 ms
+%		'Tdecay'	<value>						Poisson decay time constant
+%														default: 20 ms
+%		'Units', <'ms'|'s'|'samples'>		Units for spiketimes, Trise, Tdecay, 
+%													Maxdur
+%														default: ms
+%		'Fs'										Sample rate for output SDF
+%														default = 1000 samples/second
+% 		'Maxdur'		max duration to use for sdf vectors.
 % 						note that if this is not provided, empty
 % 						spikebins vector will cause error to be thrown.
 %  
@@ -53,6 +59,7 @@ function [sdf, K, S] = poissconv(spiketimes, varargin)
 %	10 Feb 2015 (SJS)
 % 	 - reworked input arguments to use ms units by default
 %	 - updated documentation
+%	11 Nov 2020 (SJS): cleaning up code  
 %------------------------------------------------------------------------
 
 %------------------------------------------------------------------------
@@ -65,6 +72,8 @@ Trise = 1;
 Tdecay = 20;
 Fs = 1000;
 decay_factor = 5;
+Units = 'ms';
+
 
 userTrise = 0;
 userTdecay = 0;
@@ -114,7 +123,7 @@ if nvararg
 				end
 				aindex = aindex + 2;
 			% max duration
-			case 'MAXDUR'
+			case {'MAXDUR', 'MAX_DUR', 'MAX_T'}
 				Maxdur = varargin{aindex + 1};
 				aindex = aindex + 2;
 			otherwise
