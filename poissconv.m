@@ -74,7 +74,6 @@ Fs = 1000;
 decay_factor = 5;
 Units = 'ms';
 
-
 userTrise = 0;
 userTdecay = 0;
 userFs = 0; %#ok<NASGU>
@@ -154,7 +153,9 @@ if strcmpi(Units, 'ms')
 	% convert spikes to sample times
 	%----------------------------------------------------------------
 	% since spiketimes are in units of milliseconds, use ms2samples
-	spikebins = ms2samples(spiketimes, Fs);
+% 	spikebins = ms2samples(spiketimes, Fs);
+	% adding 1 to account for matlab indexing
+	spikebins = ms2samples(spiketimes, Fs) + 1;
 	% convert Maxdur to maxsamples
 	if isempty(Maxdur)
 		maxsamples = max(spikebins) + ms2samples(Klength, Fs);
@@ -215,7 +216,8 @@ elseif strcmpi(Units, 'seconds')
 	% convert spikes to sample times
 	%----------------------------------------------------------------
 	% convert spikes to ms, then use ms2samples
-	spikebins = ms2samples(1000.*spiketimes, Fs);
+% 	spikebins = ms2samples(1000.*spiketimes, Fs);
+	spikebins = ms2samples(1000.*spiketimes, Fs) + 1;
 	% convert Maxdur to maxsamples
 	if isempty(Maxdur)
 		maxsamples = max(spikebins) + ms2samples(1000*Klength, Fs);
@@ -247,10 +249,46 @@ end
 % convolution output (length = length(S))
 %------------------------------------------------------------------------
 %------------------------------------------------------------------------
-sdf = conv(S, K);
-%sdf = tmp((L2+1):(length(tmp) - L2) );
-if ~isempty(maxsamples)
-	sdf = sdf(1:maxsamples);
+% % pad S with zeros to eliminate odd things at start and end
+% padlen = length(K);
+% Spad = [zeros(1, padlen) force_row(S) zeros(1, padlen)];
+% sdftmp = conv(Spad, K);
+% % keep original bits
+% sdf = sdftmp( (padlen:(padlen+length(S)))+1 );
+% %sdf = tmp((L2+1):(length(tmp) - L2) );
+% if ~isempty(maxsamples)
+% 	sdf = sdf(1:maxsamples);
+% end
+
+%------------------------------------------------------------------------
+% convolve spike train with Gaussian, return only valid part of 
+% convolution output (length = length(S))
+%------------------------------------------------------------------------
+% L2 = length(K);
+% tmp = conv(S, K);
+% sdf = tmp((L2+1):(length(tmp) - L2) );
+% if ~isempty(maxsamples)
+% 	sdf = sdf(1:maxsamples);
+% end
+% sdf = conv(S, K, 'SAME');
+% if ~isempty(maxsamples)
+% 	sdf = sdf(1:maxsamples);
+% end
+
+% find peak index
+[~, pkI] = max(K);
+% find pts to add to beginning to shift to center
+nshift = length(K) - (pkI + 2);
+if even(length(nshift) + length(K))
+	nshift = nshift - 1;
 end
-
-
+% add to K
+K = [zeros(1, nshift) K];
+% perform convolution, return same length vector as S
+sdf = conv(S, K, 'SAME');
+% truncate sdf if length is greater than maxsamples
+if ~isempty(maxsamples)
+	if length(sdf) > maxsamples
+		sdf = sdf(1:maxsamples);
+	end
+end
